@@ -19,6 +19,8 @@ void NotificationComponent::OnConfigLoaded()
 	Checkable::OnStateChange.connect(std::bind(&NotificationComponent::StateChangeHandler, this, _1, _2, _3));
 	Checkable::OnFlappingChanged.connect(std::bind(&NotificationComponent::FlappingChangedHandler, this, _1));
 
+	Checkable::OnAcknowledgementSet.connect(std::bind(&NotificationComponent::SetAcknowledgementHandler, this, _1, _2, _3));
+
 	/* This is never called and does not work currently */
 	Notification::OnNextNotificationChanged.connect(std::bind(&NotificationComponent::NextNotificationChangedHandler, this, _1, _2));
 
@@ -76,7 +78,8 @@ void NotificationComponent::StatsFunc(const Dictionary::Ptr& status, const Array
 	status->Set("notificationcomponent", new Dictionary(std::move(nodes)));
 }
 
-void NotificationComponent::NextNotificationChangedHandler(const Notification::Ptr& notification, const MessageOrigin::Ptr& origin) {
+void NotificationComponent::NextNotificationChangedHandler(const Notification::Ptr& notification, const MessageOrigin::Ptr& origin)
+{
 	Log(LogCritical, "DEBUG")
 		<< "GOT IT " << notification->GetName() << " next: " << Utility::FormatDateTime("%Y-%m-%d %H:%M:%S %z", notification->GetNextNotification());
 	boost::mutex::scoped_lock lock(m_Mutex);
@@ -96,7 +99,8 @@ void NotificationComponent::NextNotificationChangedHandler(const Notification::P
 	m_CV.notify_all();
 }
 
-void NotificationComponent::StateChangeHandler(const Checkable::Ptr& checkable, const CheckResult::Ptr& cr, StateType type) {
+void NotificationComponent::StateChangeHandler(const Checkable::Ptr& checkable, const CheckResult::Ptr& cr, StateType type)
+{
 	// Need to know if this was a recovery (state = ok?)
 	if (type == StateTypeHard) {
 		Log(LogCritical, "DEBUG")
@@ -160,6 +164,13 @@ void NotificationComponent::FlappingChangedHandler(const Checkable::Ptr& checkab
 			m_IdleNotifications.insert(GetNotificationScheduleInfo(notification));
 			m_CV.notify_all();
 		}
+	}
+}
+
+void NotificationComponent::SetAcknowledgementHandler(const Checkable::Ptr& checkable, const String& author, const String& text)
+{
+	for (const Notification::Ptr notification : checkable->GetNotifications()) {
+		notification->BeginExecuteNotification(NotificationAcknowledgement, checkable->GetLastCheckResult(), false, false, author,text);
 	}
 }
 
