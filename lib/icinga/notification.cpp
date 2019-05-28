@@ -585,13 +585,13 @@ void Notification::ExecuteNotificationHelper(NotificationType type, const User::
 		/* required by compatlogger */
 		Checkable::OnNotificationSentToUser(this, GetCheckable(), user, type, cr, nr, author, text, command->GetName(), nullptr);
 
-		Log(LogInformation, "Notification")
+		Log(LogCritical, "Notification")
 			<< "Completed sending '" << NotificationTypeToStringInternal(type)
 			<< "' notification '" << notificationName
 			<< "' for checkable '" << checkableName
 			<< "' and user '" << userName << "' using command '" << commandName << "'.";
 	} catch (const std::exception& ex) {
-		Log(LogWarning, "Notification")
+		Log(LogCritical, "Notification")
 			<< "Exception occurred during notification '" << notificationName
 			<< "' for checkable '" << checkableName
 			<< "' and user '" << userName << "' using command '" << commandName << "': "
