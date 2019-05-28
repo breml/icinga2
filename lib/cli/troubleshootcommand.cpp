@@ -368,8 +368,10 @@ bool TroubleshootCommand::PrintCrashReports(InfoLog& log)
 	String bestFilename;
 
 	try {
-		Utility::Glob(spath, std::bind(&GetLatestReport, _1, std::ref(bestTimestamp),
-			std::ref(bestFilename)), GlobFile);
+		auto lambdaGetLatestReport = [&](const String& filename){
+			return GetLatestReport(filename, bestTimestamp, bestFilename);
+		};
+		Utility::Glob(spath, lambdaGetLatestReport, GlobFile);
 	}
 #ifdef _WIN32
 	catch (win32_error &ex) {
