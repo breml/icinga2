@@ -34,7 +34,8 @@ void SocketEventEngine::Start()
 
 		InitializeThread(tid);
 
-		m_Threads[tid] = std::thread(std::bind(&SocketEventEngine::ThreadProc, this, tid));
+		auto lambdaSocketEventEngine = [&, tid](){return SocketEventEngine::ThreadProc(tid);};
+		m_Threads[tid] = std::thread(lambdaSocketEventEngine);
 	}
 }
 
