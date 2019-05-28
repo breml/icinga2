@@ -175,11 +175,10 @@ char *ConsoleCommand::ConsoleCompleteHelper(const char *word, int state)
 			bool ready = false;
 			Array::Ptr suggestions;
 
-			l_ApiClient->AutocompleteScript(l_Session, word, l_ScriptFrame->Sandboxed,
-				std::bind(&ConsoleCommand::AutocompleteScriptCompletionHandler,
-				std::ref(mutex), std::ref(cv), std::ref(ready),
-				_1, _2,
-				std::ref(suggestions)));
+			auto lambdaAutocompleteScriptCompletionHandler = [&](const boost::exception_ptr& eptr, const Array::Ptr& result){
+			    return ConsoleCommand::AutocompleteScriptCompletionHandler(mutex, cv, ready, eptr, result, suggestions);
+			};
+			l_ApiClient->AutocompleteScript(l_Session, word, l_ScriptFrame->Sandboxed, lambdaAutocompleteScriptCompletionHandler);
 
 			{
 				boost::mutex::scoped_lock lock(mutex);
@@ -422,11 +421,10 @@ incomplete:
 				bool ready = false;
 				boost::exception_ptr eptr;
 
-				l_ApiClient->ExecuteScript(l_Session, command, scriptFrame.Sandboxed,
-					std::bind(&ConsoleCommand::ExecuteScriptCompletionHandler,
-					std::ref(mutex), std::ref(cv), std::ref(ready),
-					_1, _2,
-					std::ref(result), std::ref(eptr)));
+                auto lambdaExecuteScriptCompletionHandler = [&](const boost::exception_ptr& exptr, const Value& resultin){
+                    return ConsoleCommand::ExecuteScriptCompletionHandler(mutex, cv, ready, exptr, resultin, result, eptr);
+                };
+				l_ApiClient->ExecuteScript(l_Session, command, scriptFrame.Sandboxed, lambdaExecuteScriptCompletionHandler);
 
 				{
 					boost::mutex::scoped_lock lock(mutex);
