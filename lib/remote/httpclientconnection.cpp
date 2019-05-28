@@ -46,7 +46,8 @@ void HttpClientConnection::Reconnect()
 		 */
 
 	/* the stream holds an owning reference to this object through the callback we're registering here */
-	m_Stream->RegisterDataHandler(std::bind(&HttpClientConnection::DataAvailableHandler, HttpClientConnection::Ptr(this), _1));
+	auto lambdaDataAvailableHandler = [&](const Stream::Ptr& stream){return HttpClientConnection::DataAvailableHandler(stream);};
+	m_Stream->RegisterDataHandler(lambdaDataAvailableHandler);
 	if (m_Stream->IsDataAvailable())
 		DataAvailableHandler(m_Stream);
 }
