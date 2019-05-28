@@ -37,7 +37,10 @@ void ApiClient::ExecuteScript(const String& session, const String& command, bool
 		req->RequestUrl = url;
 		req->AddHeader("Authorization", "Basic " + Base64::Encode(m_User + ":" + m_Password));
 		req->AddHeader("Accept", "application/json");
-		m_Connection->SubmitRequest(req, std::bind(ExecuteScriptHttpCompletionCallback, _1, _2, callback));
+		auto lambdaExecuteScriptHttpCompletionCallback = [=](HttpRequest& request, HttpResponse& response){
+			return ExecuteScriptHttpCompletionCallback(request, response, callback);
+		};
+		m_Connection->SubmitRequest(req, lambdaExecuteScriptHttpCompletionCallback);
 	} catch (const std::exception&) {
 		callback(boost::current_exception(), Empty);
 	}
@@ -116,7 +119,10 @@ void ApiClient::AutocompleteScript(const String& session, const String& command,
 		req->RequestUrl = url;
 		req->AddHeader("Authorization", "Basic " + Base64::Encode(m_User + ":" + m_Password));
 		req->AddHeader("Accept", "application/json");
-		m_Connection->SubmitRequest(req, std::bind(AutocompleteScriptHttpCompletionCallback, _1, _2, callback));
+		auto lambdaAutocompleteScriptHttpCompletionCallback = [=](HttpRequest& request, HttpResponse& response){
+			return AutocompleteScriptHttpCompletionCallback(request, response, callback);
+		};
+		m_Connection->SubmitRequest(req, lambdaAutocompleteScriptHttpCompletionCallback);
 	} catch (const std::exception&) {
 		callback(boost::current_exception(), nullptr);
 	}
