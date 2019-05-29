@@ -206,6 +206,16 @@ void JsonRpcConnection::Disconnect()
 			} catch (...) {
 			}
 
+			try {
+				m_Stream->lowest_layer().cancel();
+			} catch (...) {
+			}
+
+			try {
+				m_Stream->lowest_layer().close();
+			} catch (...) {
+			}
+
 			CpuBoundWork removeClient (yc);
 
 			if (m_Endpoint) {

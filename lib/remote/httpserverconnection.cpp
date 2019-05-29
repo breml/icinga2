@@ -80,6 +80,16 @@ void HttpServerConnection::Disconnect()
 			} catch (...) {
 			}
 
+			try {
+				m_Stream->lowest_layer().cancel();
+			} catch (...) {
+			}
+
+			try {
+				m_Stream->lowest_layer().close();
+			} catch (...) {
+			}
+
 			auto listener (ApiListener::GetInstance());
 
 			if (listener) {
